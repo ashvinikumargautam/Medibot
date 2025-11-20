@@ -10,17 +10,23 @@ from dotenv import load_dotenv
 import os
 from src.prompt import *
 
+# ----------------------------------------------------
+# INITIALIZE FLASK + LOAD ENV
+# ----------------------------------------------------
 app = Flask(__name__)
 load_dotenv()
 
-# API Keys
-PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
-os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
+# ----------------------------------------------------
+# CONFIGURE GOOGLE GEMINI API
+# ----------------------------------------------------
+genai.configure(api_key=GEMINI_API_KEY)
 
-# Embeddings + Pinecone
+# ----------------------------------------------------
+# LOAD EMBEDDINGS + PINECONE INDEX
+# ----------------------------------------------------
 embeddings = download_hugging_face_embaddings()
 index_name = "medicalbot"
 
@@ -28,36 +34,63 @@ docsearch = PineconeVectorStore.from_existing_index(
     index_name=index_name,
     embedding=embeddings,
 )
-retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-# Configure Gemini
-genai.configure(api_key=GEMINI_API_KEY)
+retriever = docsearch.as_retriever(
+    search_type="similarity",
+    search_kwargs={"k": 3}
+)
+
+# ----------------------------------------------------
+# FIX: USE A SUPPORTED GEMINI MODEL
+# ----------------------------------------------------
+# ❌ "gemini-1.5-flash" → NOT AVAILABLE in current API (causes 404)
+# ✅ Use latest stable supported model: gemini-2.0-flash
 llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
-    temperature=0.4,
-    max_output_tokens=500,
+    model="gemini-2.0-flash",     # ⭐ Correct working model
+    temperature=0.2,
+    max_output_tokens=600,
     google_api_key=GEMINI_API_KEY,
 )
 
-# Prompt + Retrieval Chain
+# ----------------------------------------------------
+# PROMPT TEMPLATE
+# ----------------------------------------------------
 prompt = ChatPromptTemplate.from_messages([
     ("system", system_prompt),
-    ("human", "{input}"),
+    ("human", "{input}")
 ])
-question_answer_chain = create_stuff_documents_chain(llm, prompt)
-reg_chain = create_retrieval_chain(retriever, question_answer_chain)
 
+# ----------------------------------------------------
+# BUILD RETRIEVAL + QA CHAIN
+# ----------------------------------------------------
+qa_chain = create_stuff_documents_chain(llm, prompt)
+reg_chain = create_retrieval_chain(retriever, qa_chain)
+
+# ----------------------------------------------------
+# FLASK ROUTES
+# ----------------------------------------------------
 @app.route("/")
 def index():
     return render_template("chat.html")
 
 @app.route("/get", methods=["POST"])
 def chat():
-    msg = request.form["msg"]   # ✅ FIXED
+    msg = request.form.get("msg")
     print("User:", msg)
-    response = reg_chain.invoke({"input": msg})
-    print("Bot:", response["answer"])
-    return str(response["answer"])
 
+    try:
+        result = reg_chain.invoke({"input": msg})
+        answer = result["answer"]
+    except Exception as e:
+        print("ERROR:", e)
+        answer = "⚠️ Server Error: Unable to process your request."
+
+    print("Bot:", answer)
+    return str(answer)
+
+# ----------------------------------------------------
+# RUN SERVER
+# ----------------------------------------------------
 if __name__ == "__main__":
+    print("🚀 Server running on http://127.0.0.1:8080")
     app.run(host="0.0.0.0", port=8080, debug=True)
