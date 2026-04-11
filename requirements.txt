@@ -9,6 +9,10 @@ langchain-pinecone>=0.1.0
 langchain-openai
 langchain-experimental
 langchain-text-splitters
+langchain-google-genai
+
+# Google AI (Fixed the missing module error)
+google-generativeai
 
 # Vector DB & Embeddings
 pinecone[grpc]
