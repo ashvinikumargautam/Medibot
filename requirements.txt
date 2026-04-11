@@ -2,7 +2,7 @@
 flask
 gunicorn
 
-# Core AI & Logic (Added specific sub-packages)
+# Core AI & Logic
 langchain
 langchain-community
 langchain-core
