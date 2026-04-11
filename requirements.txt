@@ -1,12 +1,18 @@
-sentence-transformers == 2.2.2
-langchain
+# Web Server
 flask
-pypdf
-python-dotenv
-pinecone[grpc]
-langchain-pinecone
-langchain-community
+gunicorn
+
+# Core AI & Logic
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-pinecone>=0.1.0
 langchain-openai
 langchain-experimental
-flask
--e .
+
+# Vector DB & Embeddings
+pinecone[grpc]
+sentence-transformers==2.2.2
+
+# Utilities
+pypdf
+python-dotenv
