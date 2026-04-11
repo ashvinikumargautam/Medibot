@@ -2,16 +2,16 @@
 flask
 gunicorn
 
-# Core AI & Logic
-langchain>=0.1.0
-langchain-community>=0.0.20
-langchain-pinecone>=0.1.0
-langchain-openai
-langchain-experimental
+# Core AI & Logic (Added specific sub-packages)
+langchain
+langchain-community
+langchain-core
 langchain-text-splitters
 langchain-google-genai
+langchain-pinecone
+langchain-openai
 
-# Google AI (Fixed the missing module error)
+# Google AI
 google-generativeai
 
 # Vector DB & Embeddings
