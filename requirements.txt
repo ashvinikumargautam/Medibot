@@ -5,6 +5,7 @@ langchain-community
 langchain-core
 langchain-pinecone
 langchain-google-genai
+langchain-classic
 google-generativeai
 pinecone[grpc]
 sentence-transformers==2.2.2
