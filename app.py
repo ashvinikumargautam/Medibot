@@ -3,7 +3,7 @@ from src.helper import download_hugging_face_embaddings
 from langchain_pinecone import PineconeVectorStore
 import google.generativeai as genai
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.chains.retrieval import create_retrieval_chain
+from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
@@ -86,5 +86,5 @@ def chat():
 # RUN SERVER
 # ----------------------------------------------------
 if __name__ == "__main__":
-    print("🚀 Server running on http://127.0.0.1:8080")
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    print("🚀 Server running on http://127.0.0.1:10000")
+    app.run(host="0.0.0.0", port=10000)

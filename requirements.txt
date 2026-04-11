@@ -1,23 +1,12 @@
-# Web Server
 flask
 gunicorn
-
-# Core AI & Logic
 langchain
 langchain-community
 langchain-core
-langchain-text-splitters
-langchain-google-genai
 langchain-pinecone
-langchain-openai
-
-# Google AI
+langchain-google-genai
 google-generativeai
-
-# Vector DB & Embeddings
 pinecone[grpc]
 sentence-transformers==2.2.2
-
-# Utilities
 pypdf
 python-dotenv
