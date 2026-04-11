@@ -40,11 +40,7 @@ retriever = docsearch.as_retriever(
     search_kwargs={"k": 3}
 )
 
-# ----------------------------------------------------
-# FIX: USE A SUPPORTED GEMINI MODEL
-# ----------------------------------------------------
-# ❌ "gemini-1.5-flash" → NOT AVAILABLE in current API (causes 404)
-# ✅ Use latest stable supported model: gemini-2.0-flash
+
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",     # ⭐ Correct working model
     temperature=0.2,
@@ -52,9 +48,7 @@ llm = ChatGoogleGenerativeAI(
     google_api_key=GEMINI_API_KEY,
 )
 
-# ----------------------------------------------------
 # PROMPT TEMPLATE
-# ----------------------------------------------------
 prompt = ChatPromptTemplate.from_messages([
     ("system", system_prompt),
     ("human", "{input}")
