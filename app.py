@@ -8,6 +8,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 import os
+import traceback
 from src.prompt import *
 
 # ----------------------------------------------------
@@ -18,6 +19,9 @@ load_dotenv()
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Set Pinecone key in environment (required by pinecone-client internally)
+os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY or ""
 
 # ----------------------------------------------------
 # CONFIGURE GOOGLE GEMINI API
@@ -75,8 +79,8 @@ def chat():
         result = reg_chain.invoke({"input": msg})
         answer = result["answer"]
     except Exception as e:
-        print("ERROR:", e)
-        answer = "Sorry, I couldn't process your request. Please try again."
+        traceback.print_exc()   # prints full error to Render logs
+        answer = f"Error details: {str(e)}"
 
     print("Bot:", answer)
     return str(answer)
