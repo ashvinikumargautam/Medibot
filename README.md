@@ -1,6 +1,6 @@
 # 🏥 Medibot — AI Medical Chatbot
 
-An end-to-end medical chatbot powered by Google Gemini, Pinecone vector search, and LangChain.
+An end-to-end medical chatbot powered by **Groq (Llama 3)**, **Pinecone** vector search, and **LangChain RAG pipeline**.
 
 ---
 
@@ -8,7 +8,7 @@ An end-to-end medical chatbot powered by Google Gemini, Pinecone vector search, 
 
 - **Flask** — web server
 - **LangChain** — RAG pipeline
-- **Google Gemini 2.0 Flash** — LLM
+- **Groq (Llama 3 8B)** — LLM (free, ultra-fast)
 - **Pinecone** — vector database
 - **HuggingFace sentence-transformers** — embeddings
 - **Gunicorn** — production WSGI server
@@ -24,6 +24,7 @@ medibot/
 ├── requirements.txt        # Pinned dependencies
 ├── Procfile                # Render/Railway start command
 ├── runtime.txt             # Python version for deployment
+├── render.yaml             # Render configuration
 ├── setup.py
 ├── .env                    # Local secrets (never commit!)
 ├── .gitignore
@@ -47,14 +48,14 @@ cd Medibot
 
 # 2. Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate        # Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Create .env file
-echo "PINECONE_API_KEY=your_key_here" > .env
-echo "GEMINI_API_KEY=your_key_here" >> .env
+# 4. Create .env file with your keys
+echo "PINECONE_API_KEY=your_pinecone_key" > .env
+echo "GROQ_API_KEY=your_groq_key" >> .env
 
 # 5. Run data ingestion (only once — uploads PDFs to Pinecone)
 python store_index.py
@@ -63,35 +64,47 @@ python store_index.py
 python app.py
 ```
 
+Open **http://localhost:10000** in your browser.
+
 ---
 
 ## 🌐 Deploy on Render
 
 1. Push this repo to GitHub
-2. Go to [render.com](https://render.com) → New Web Service
+2. Go to [render.com](https://render.com) → **New Web Service**
 3. Connect your GitHub repo
 4. Set these in Render dashboard:
    - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120`
-   - **Environment Variables:**
-     - `PINECONE_API_KEY` = your key
-     - `GEMINI_API_KEY` = your key
+   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:${PORT:-10000} --workers 1 --timeout 300 --preload`
+   - **Environment Variables:** *(see table below)*
 
-> ⚠️ Run `store_index.py` locally first to populate your Pinecone index before deploying.
+> ⚠️ Run `store_index.py` locally **first** to populate your Pinecone index before deploying.
 
 ---
 
 ## 🔑 Environment Variables
 
-| Variable | Description |
+| Variable | Where to get it |
 |---|---|
-| `PINECONE_API_KEY` | From [pinecone.io](https://app.pinecone.io) |
-| `GEMINI_API_KEY` | From [Google AI Studio](https://aistudio.google.com) |
+| `PINECONE_API_KEY` | [app.pinecone.io](https://app.pinecone.io) → API Keys |
+| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) → API Keys |
+
+---
+
+## 🆓 Why Groq instead of Gemini?
+
+| | Gemini Free | Groq Free |
+|---|---|---|
+| Requests/day | 1,500 | **14,400** |
+| Speed | Medium | **Ultra-fast** |
+| Model | gemini-1.5-flash | llama3-8b-8192 |
+| Cost | Free tier | **Always free** |
 
 ---
 
 ## ⚠️ Important Notes
 
-- Never commit your `.env` file — it's in `.gitignore`
-- `store_index.py` only needs to be run **once** locally to upload data
-- The `Data/` folder is also gitignored — keep your PDFs local
+- Never commit your `.env` file — it is already in `.gitignore`
+- `store_index.py` only needs to be run **once** locally to upload your PDFs to Pinecone
+- The `Data/` folder is gitignored — keep your PDFs local only
+- Render free tier spins down after 15 minutes of inactivity — first request after sleep takes ~30s
