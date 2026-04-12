@@ -10,21 +10,14 @@ import os
 import traceback
 from src.prompt import *
 
-# ----------------------------------------------------
-# INITIALIZE FLASK + LOAD ENV
-# ----------------------------------------------------
 app = Flask(__name__)
 load_dotenv()
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Set Pinecone key in environment (required by pinecone-client internally)
 os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY or ""
 
-# ----------------------------------------------------
-# LOAD EMBEDDINGS + PINECONE INDEX
-# ----------------------------------------------------
 embeddings = download_hugging_face_embaddings()
 index_name = "medicalbot"
 
@@ -38,9 +31,6 @@ retriever = docsearch.as_retriever(
     search_kwargs={"k": 3}
 )
 
-# ----------------------------------------------------
-# GROQ LLM — free tier, very fast
-# ----------------------------------------------------
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.2,
@@ -48,21 +38,14 @@ llm = ChatGroq(
     groq_api_key=GROQ_API_KEY,
 )
 
-# PROMPT TEMPLATE
 prompt = ChatPromptTemplate.from_messages([
     ("system", system_prompt),
     ("human", "{input}")
 ])
 
-# ----------------------------------------------------
-# BUILD RETRIEVAL + QA CHAIN
-# ----------------------------------------------------
 qa_chain = create_stuff_documents_chain(llm, prompt)
 reg_chain = create_retrieval_chain(retriever, qa_chain)
 
-# ----------------------------------------------------
-# FLASK ROUTES
-# ----------------------------------------------------
 @app.route("/")
 def index():
     return render_template("chat.html")
@@ -71,20 +54,15 @@ def index():
 def chat():
     msg = request.form.get("msg")
     print("User:", msg)
-
     try:
         result = reg_chain.invoke({"input": msg})
         answer = result["answer"]
     except Exception as e:
         traceback.print_exc()
         answer = f"Error details: {str(e)}"
-
     print("Bot:", answer)
     return str(answer)
 
-# ----------------------------------------------------
-# RUN SERVER
-# ----------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
