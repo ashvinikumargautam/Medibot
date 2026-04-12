@@ -40,9 +40,8 @@ retriever = docsearch.as_retriever(
     search_kwargs={"k": 3}
 )
 
-
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",     # ⭐ Correct working model
+    model="gemini-2.0-flash",
     temperature=0.2,
     max_output_tokens=600,
     google_api_key=GEMINI_API_KEY,
@@ -77,13 +76,14 @@ def chat():
         answer = result["answer"]
     except Exception as e:
         print("ERROR:", e)
-        answer = "⚠️ Server Error: Unable to process your request."
+        answer = "Sorry, I couldn't process your request. Please try again."
 
     print("Bot:", answer)
     return str(answer)
 
 # ----------------------------------------------------
-# RUN SERVER
+# RUN SERVER — reads PORT from env (required by Render)
 # ----------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)
