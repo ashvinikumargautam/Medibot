@@ -33,7 +33,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # Make model configurable from Render
 GROQ_MODEL = os.getenv(
     "GROQ_MODEL",
-    "llama-3.3-70b-versatile"
+    "openai/gpt-oss-120b"
 )
 
 
